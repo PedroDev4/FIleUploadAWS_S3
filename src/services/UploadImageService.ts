@@ -9,6 +9,7 @@ class UploadImageService {
         const s3Storage = new S3Storage();
 
         await s3Storage.saveFile(file.filename)
+        console.log(file.filename);
     }
 
 }

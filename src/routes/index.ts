@@ -18,8 +18,12 @@ routes.post("/", upload.single('file'), async (request, response) => {
 });
 
 routes.delete("/:filename", async (request, response) => {
+    const { filename } = request.params;
 
-    // TODO
+    const deleteImagesService = new DeleteImageService();
+    await deleteImagesService.execute(filename);
+
+    return response.send();
 
 });
 
