@@ -12,6 +12,8 @@ routes.post("/", upload.single('file'), async (request, response) => {
 
     const uploadImagesService = new UploadImageService();
     await uploadImagesService.execute(file);
+    console.log(file.mimetype);
+    console.log(file.originalname);
 
     return response.send();
 
