@@ -2,7 +2,10 @@ import aws, { S3 } from 'aws-sdk';
 import path from 'path';
 import mime from 'mime';
 import multerConfig from '../config/multer';
+import * as stream from 'stream';
 import fs from 'fs';
+import { getType } from 'mime';
+import { resolve } from 'path';
 
 class S3Storage {
 
@@ -30,9 +33,11 @@ class S3Storage {
         }
 
         const fileContent = await fs.promises.readFile(originalPath);
+        const bucketName = String(process.env.AWS_BUCKET_NAME);
+        console.log(bucketName);
 
         this.client.putObject({
-            Bucket: "mybucketuploadapi",
+            Bucket: bucketName,
             Key: filename,
             ACL: "public-read",
             Body: fileContent,
@@ -40,6 +45,27 @@ class S3Storage {
         }).promise();
 
         await fs.promises.unlink(originalPath);
+    }
+
+    async uploadVideo(filename: string): Promise<string> {
+        const originalPath = resolve(multerConfig.directory, filename);
+        const passThrough = new stream.PassThrough();
+
+        const videoStream = fs.createReadStream(originalPath).pipe(passThrough);
+
+        const bucketName = String(process.env.AWS_BUCKET_NAME);
+        console.log(bucketName);
+
+        this.client.putObject({
+            Bucket: bucketName,
+            Key: filename,
+            ACL: 'public-read',
+            Body: videoStream,
+            ContentType: "MP4/GIF"
+        });
+
+        const fileBucketURL = `https://${bucketName}.s3.amazonaws.com/${filename}`;
+        return fileBucketURL;
     }
 
     async deleteFile(filename: string): Promise<void> {
